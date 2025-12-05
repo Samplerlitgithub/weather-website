@@ -28,7 +28,7 @@ const favListEl  = document.getElementById("favList");
 const saveFavBtn = document.getElementById("saveFavBtn");
 
 // ✅ PEHLE declare
-const clearBtn   = document.getElementById("clearBtn");
+const clearFavsBtn  = document.getElementById("clearFavs");
 
 const loadingEl  = document.getElementById("loading");
 const errorBox   = document.getElementById("errorBox");
@@ -375,10 +375,42 @@ function handleClear() {
 
 // ------------------------
 // Events
-// ------------------------
+// =======================
+// FAVORITES – SAVE / CLEAR HANDLERS
+// =======================
+
+function handleSaveFavorite() {
+  // Agar city hi set nahi hai to favorites me kya save kare
+  if (!currentCity) {
+    showError("Search a city first before saving to favorites.");
+    return;
+  }
+
+  // Duplicate avoid karo
+  if (favorites.includes(currentCity)) {
+    showError("This city is already in your favorites.");
+    return;
+  }
+
+  favorites.push(currentCity);
+  saveFavorites();
+  renderFavorites();
+}
+
+function handleClearFavorites() {
+  favorites = [];
+  saveFavorites();
+  renderFavorites();
+}
+
+
+// =======================
+// EVENT WIRING
+// =======================
+
 function wireEvents() {
-  // Search button
-  if (searchBtn) {
+  // ------- Search button -------
+  if (searchBtn && cityInput) {
     searchBtn.addEventListener("click", () => {
       const city = cityInput.value.trim();
       if (!city) {
@@ -387,47 +419,53 @@ function wireEvents() {
       }
       fetchWeatherByCity(city);
     });
-  }
 
-  // Enter press
-  if (cityInput) {
+    // Enter key press on input
     cityInput.addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
-        e.preventDefault();
         searchBtn.click();
       }
     });
   }
 
-  // Use My Location
+  // ------- Use My Location -------
   if (useGeoBtn) {
     useGeoBtn.addEventListener("click", () => {
-      clearError();
+      clearError?.();
+
       if (!navigator.geolocation) {
-        showError("Geolocation not supported in this browser.");
+        showError("Geolocation is not supported in this browser.");
         return;
       }
+
       navigator.geolocation.getCurrentPosition(
         (pos) => {
-          const { latitude, longitude } = pos.coords;
-          fetchWeatherByCoords(latitude, longitude);
+          currentCoords = {
+            lat: pos.coords.latitude,
+            lon: pos.coords.longitude,
+          };
+          fetchWeatherByCoords(currentCoords.lat, currentCoords.lon);
         },
         () => {
-          showError("Location permission denied or unavailable.");
+          showError("Could not get your location. Please allow location access.");
         }
       );
     });
   }
 
-  // Unit toggle (2 buttons same id)
-  if (unitToggleBtns.length) {
+  // ------- Unit toggle (2 buttons, same id) -------
+  if (unitToggleBtns && unitToggleBtns.length) {
     unitToggleBtns.forEach((btn) => {
       btn.addEventListener("click", () => {
+        // metric <-> imperial
         units = units === "metric" ? "imperial" : "metric";
+
+        // Dono buttons ka text update karo
         unitToggleBtns.forEach((b) => {
           b.textContent = `Unit: ${units === "metric" ? "°C" : "°F"}`;
         });
 
+        // Current data ko new units ke saath re-fetch karo
         if (currentCoords) {
           fetchWeatherByCoords(currentCoords.lat, currentCoords.lon);
         } else if (currentCity) {
@@ -437,26 +475,34 @@ function wireEvents() {
     });
   }
 
-  // Save Fav
+  // ------- Save to favorites -------
   if (saveFavBtn) {
     saveFavBtn.addEventListener("click", handleSaveFavorite);
   }
 
-  // Clear
+  // ------- Clear favorites list -------
+  const clearFavsBtn = document.getElementById("clearFavs");
+  if (clearFavsBtn) {
+    clearFavsBtn.addEventListener("click", handleClearFavorites);
+  }
+
+  // ------- Clear current card (weather result) -------
   if (clearBtn) {
-    clearBtn.addEventListener("click", handleClear);
+    clearBtn.addEventListener("click", () => {
+      // resetUI tumhare upper code me already defined hai
+      resetUI();
+    });
   }
 }
 
-// ------------------------
-// Init
-// ------------------------
-(function init() {
-  setYear();
-  loadFavorites();
-  renderFavorites();
-  wireEvents();
 
-  // ⚠IMPORTANT: koi default city yahan call nahi kar rahe.
-  // Isliye homepage pe koi Mumbai/Delhi auto-load nahi hoga.
+// =======================
+// INIT – app start hone par kya kare
+// =======================
+
+(function init() {
+  setYear();          
+  loadFavorites();    
+  renderFavorites();  
+  wireEvents();       
 })();
