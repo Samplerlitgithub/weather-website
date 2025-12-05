@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Weather Pulse — Professional</title>
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="Style.css" />
+</head>
+
+<body>
+  <div class="page">
+
+    <!-- HEADER -->
+    <header class="header">
+      <div class="brand">
+        <strong>Weather Pulse</strong>
+        <span class="tag">Reliable • Fast • Minimal</span>
+      </div>
+
+      <div class="header-actions">
+        <button id="unitToggle" class="btn-ghost" aria-pressed="false">Unit: °C</button>
+      </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="container" id="main">
+
+      <!-- SEARCH PANEL -->
+      <section class="panel search-panel" aria-labelledby="search-title">
+        <h2 id="search-title" class="visually-hidden">Search Weather</h2>
+
+        <form id="searchForm" class="search-form" onsubmit="return false;">
+          <label for="cityInput" class="visually-hidden">City Name</label>
+
+          <input id="cityInput" class="input" placeholder="Search city — e.g. Delhi, Mumbai" autocomplete="off" />
+
+          <div class="form-actions">
+            <button id="searchBtn" class="btn-primary" type="button">Search</button>
+            <button id="useGeo" class="btn-ghost" type="button">Use My Location</button>
+          </div>
+        </form>
+
+        <!-- FAVORITES -->
+        <div class="favorites">
+          <strong>Favorites:</strong>
+          <div id="favList" class="fav-list"></div>
+        </div>
+      </section>
+
+      <!-- RESULT PANEL -->
+      <section class="panel result-panel" id="resultPanel">
+
+        <!-- LOADING -->
+        <div id="loading" class="loading hide">
+          <div class="spinner"></div>
+          <div class="loading-text">Fetching weather...</div>
+        </div>
+
+        <!-- ERROR BOX -->
+        <div id="errorBox" class="error-box hide"></div>
+
+        <!-- WEATHER CARD -->
+        <article id="card" class="weather-card hide">
+
+          <!-- CARD HEADER -->
+          <header class="card-header">
+            <div>
+              <div id="cityName" class="city-name">—</div>
+              <div id="desc" class="muted">—</div>
+            </div>
+
+            <div class="temp-block">
+              <div class="w-icon">
+                <img id="icon" src="" alt="" />
+              </div>
+              <div id="temp" class="temp-figure">--°</div>
+            </div>
+          </header>
+
+          <!-- CARD BODY -->
+          <div class="card-body">
+            <ul class="meta-list">
+              <li>Humidity: <span id="humidity">--%</span></li>
+              <li>Wind: <span id="wind">--</span></li>
+              <li>Feels like: <span id="feels">--°</span></li>
+            </ul>
+
+            <div class="chart-wrap">
+              <canvas id="forecastChart"></canvas>
+            </div>
+          </div>
+
+          <!-- CARD FOOTER -->
+          <footer class="card-footer">
+            <div class="card-actions">
+              <button id="saveFav" class="btn-outline" type="button">Save to Favorites</button>
+              <button id="clearBtn" class="btn-ghost" type="button">Clear</button>
+            </div>
+
+            <div class="meta-note">Data from OpenWeatherMap • UI by Weather Pulse</div>
+          </footer>
+
+        </article>
+      </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+      <small>© <span id="year"></span> Weather Pulse — Built by You</small>
+    </footer>
+
+  </div>
+
+  <!-- JS -->
+  <script src="app.js"></script>
+</body>
+</html>
