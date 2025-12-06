@@ -1,16 +1,19 @@
+// =======================
+// CONFIG
+// =======================
+const API_KEY = "4729c6f8666529e2b1c5e38bb99b43f0";   // tumhara key
 const USE_BACKEND = false;
-const BACKEND_URL = "/weather"; 
+const BACKEND_URL = "/weather";
 
-const API_KEY = "4729c6f8666529e2b1c5e38bb99b43f0"
-
-let units = "metric"; // "metric" or "imperial"
+let units = "metric";          // "metric" | "imperial"
 let currentCity = "";
 let currentCoords = null;
 let forecastChart = null;
 let favorites = [];
 
-// ------------------------
-// DOM Elements
+// =======================
+// DOM ELEMENTS
+// =======================
 const cityInput  = document.getElementById("cityInput");
 const searchBtn  = document.getElementById("searchBtn");
 const useGeoBtn  = document.getElementById("useGeo");
@@ -19,35 +22,25 @@ const unitToggleBtns = document.querySelectorAll("#unitToggle");
 const cityNameEl = document.getElementById("cityName");
 const tempEl     = document.getElementById("temp");
 const descEl     = document.getElementById("desc");
-const humidityEl= document.getElementById("humidity");
+const humidityEl = document.getElementById("humidity");
 const windEl     = document.getElementById("wind");
 const feelsEl    = document.getElementById("feels");
 const iconEl     = document.getElementById("icon");
 
-const favListEl  = document.getElementById("favList");
-const saveFavBtn = document.getElementById("saveFavBtn");
+const favListEl    = document.getElementById("favList");
+const saveFavBtn   = document.getElementById("saveFavBtn");
+const clearFavsBtn = document.getElementById("clearFavs");
 
-// ✅ PEHLE declare
-const clearFavsBtn  = document.getElementById("clearFavs");
-
+const clearBtn   = document.getElementById("clearBtn");
 const loadingEl  = document.getElementById("loading");
 const errorBox   = document.getElementById("errorBox");
 const yearEl     = document.getElementById("year");
 
-// ✅ PHIR listener
-if (clearBtn) {
-  clearBtn.addEventListener("click", () => {
-    resetUI();
-  });
-}
-
-// ------------------------
-// Helpers
-// ------------------------
+// =======================
+// HELPERS
+// =======================
 function setYear() {
-  if (yearEl) {
-    yearEl.textContent = new Date().getFullYear();
-  }
+  if (yearEl) yearEl.textContent = new Date().getFullYear();
 }
 
 function formatTemp(t) {
@@ -63,20 +56,14 @@ function setLoading(isLoading) {
 }
 
 function showError(msg) {
-  if (errorBox) {
-    errorBox.textContent = msg || "Something went wrong.";
-  }
+  if (errorBox) errorBox.textContent = msg || "Something went wrong.";
 }
 
 function clearError() {
-  if (errorBox) {
-    errorBox.textContent = "";
-  }
+  if (errorBox) errorBox.textContent = "";
 }
 
-// ------------------------
-// Theme by Weather
-// ------------------------
+// ===== THEME BY WEATHER =====
 function setThemeByWeather(condition) {
   const body = document.body;
   const c = (condition || "").toLowerCase();
@@ -96,9 +83,9 @@ function setThemeByWeather(condition) {
   else body.classList.add("theme-default");
 }
 
-// ------------------------
-// Render Weather
-// ------------------------
+// =======================
+// RENDER CURRENT WEATHER
+// =======================
 function renderWeather(data) {
   if (!data || !data.main || !data.weather || !data.weather[0]) {
     showError("Invalid weather data.");
@@ -109,16 +96,21 @@ function renderWeather(data) {
 
   const name = data.name || "";
   const country = data.sys && data.sys.country ? `, ${data.sys.country}` : "";
-  currentCity = `${name}${country}`;
+  currentCity = `${name}${country}`.trim();
+
   cityNameEl.textContent = currentCity || "Unknown Location";
 
   const mainCond = data.weather[0].main || "";
   const desc = data.weather[0].description || "";
-  descEl.textContent = desc ? desc.charAt(0).toUpperCase() + desc.slice(1) : "—";
+  descEl.textContent = desc
+    ? desc.charAt(0).toUpperCase() + desc.slice(1)
+    : "—";
 
   tempEl.textContent = formatTemp(data.main.temp);
   humidityEl.textContent = `Humidity: ${data.main.humidity}%`;
-  windEl.textContent = `Wind: ${data.wind.speed} ${units === "metric" ? "m/s" : "mph"}`;
+  windEl.textContent = `Wind: ${data.wind.speed} ${
+    units === "metric" ? "m/s" : "mph"
+  }`;
   feelsEl.textContent = `Feels like: ${formatTemp(data.main.feels_like)}`;
 
   const icon = data.weather[0].icon;
@@ -133,9 +125,9 @@ function renderWeather(data) {
   setThemeByWeather(mainCond);
 }
 
-// ------------------------
-// Chart (optional simple forecast)
-// ------------------------
+// =======================
+// FORECAST CHART
+// =======================
 function renderForecastChart(list) {
   const ctx = document.getElementById("forecastChart");
   if (!ctx || !Array.isArray(list) || !list.length) {
@@ -171,15 +163,10 @@ function renderForecastChart(list) {
     },
     options: {
       responsive: true,
-      plugins: {
-        legend: { display: false },
-      },
+      plugins: { legend: { display: false } },
       scales: {
         x: {
-          ticks: {
-            color: "#9ca3af",
-            font: { size: 11 },
-          },
+          ticks: { color: "#9ca3af", font: { size: 11 } },
           grid: { display: false },
         },
         y: {
@@ -189,23 +176,19 @@ function renderForecastChart(list) {
             callback: (value) =>
               `${Math.round(value)}°${units === "metric" ? "C" : "F"}`,
           },
-          grid: {
-            color: "rgba(55, 65, 81, 0.7)",
-          },
+          grid: { color: "rgba(55, 65, 81, 0.7)" },
         },
       },
     },
   });
 }
 
-// ------------------------
-// API Calls
-// ------------------------
+// =======================
+// API HELPERS
+// =======================
 async function fetchJSON(url) {
   const res = await fetch(url);
-  if (!res.ok) {
-    throw new Error(`API error ${res.status}`);
-  }
+  if (!res.ok) throw new Error(`API error ${res.status}`);
   const data = await res.json();
   if (data.cod && data.cod !== 200 && data.cod !== "200") {
     throw new Error(data.message || "API error");
@@ -213,6 +196,7 @@ async function fetchJSON(url) {
   return data;
 }
 
+// CITY
 async function fetchWeatherByCity(city) {
   try {
     if (!city) {
@@ -260,6 +244,7 @@ async function fetchWeatherByCity(city) {
   }
 }
 
+// COORDS
 async function fetchWeatherByCoords(lat, lon) {
   try {
     clearError();
@@ -273,7 +258,6 @@ async function fetchWeatherByCoords(lat, lon) {
       forecastUrl = `${BACKEND_URL}/forecast?lat=${lat}&lon=${lon}&units=${units}`;
     } else {
       weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=${units}`;
-
       forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=${units}`;
     }
 
@@ -293,9 +277,9 @@ async function fetchWeatherByCoords(lat, lon) {
   }
 }
 
-// ------------------------
-// Favorites
-// ------------------------
+// =======================
+// FAVORITES
+// =======================
 function loadFavorites() {
   try {
     const raw = localStorage.getItem("weather_favorites");
@@ -323,15 +307,15 @@ function renderFavorites() {
   }
 
   favorites.forEach((city) => {
-    const item = document.createElement("button");
-    item.type = "button";
-    item.className = "fav-item";
-    item.textContent = city;
-    item.addEventListener("click", () => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "fav-item";
+    btn.textContent = city;
+    btn.addEventListener("click", () => {
       cityInput.value = city;
       fetchWeatherByCity(city);
     });
-    favListEl.appendChild(item);
+    favListEl.appendChild(btn);
   });
 }
 
@@ -340,53 +324,8 @@ function handleSaveFavorite() {
     showError("Search a city first before saving to favorites.");
     return;
   }
-  if (!favorites.includes(currentCity)) {
-    favorites.push(currentCity);
-    saveFavorites();
-    renderFavorites();
-  }
-}
-
-// ------------------------
-// Clear Button (Reset UI)
-// ------------------------
-function handleClear() {
-  cityInput.value = "";
-  currentCity = "";
-  currentCoords = null;
   clearError();
 
-  cityNameEl.textContent = "Search a city to begin";
-  descEl.textContent = "—";
-  tempEl.textContent = formatTemp(NaN);
-  humidityEl.textContent = "Humidity: --%";
-  windEl.textContent = "Wind: -- " + (units === "metric" ? "m/s" : "mph");
-  feelsEl.textContent = "Feels like: " + formatTemp(NaN);
-  iconEl.removeAttribute("src");
-  iconEl.alt = "";
-
-  if (forecastChart) {
-    forecastChart.destroy();
-    forecastChart = null;
-  }
-
-  setThemeByWeather("");
-}
-
-// ------------------------
-// Events
-// =======================
-// FAVORITES – SAVE / CLEAR HANDLERS
-// =======================
-
-function handleSaveFavorite() {
-  // Agar city hi set nahi hai to favorites me kya save kare
-  if (!currentCity) {
-    showError("Search a city first before saving to favorites.");
-    return;
-  }
-
-  // Duplicate avoid karo
   if (favorites.includes(currentCity)) {
     showError("This city is already in your favorites.");
     return;
@@ -403,13 +342,38 @@ function handleClearFavorites() {
   renderFavorites();
 }
 
+// =======================
+// RESET UI (Clear button)
+// =======================
+function resetUI() {
+  cityInput.value = "";
+  currentCity = "";
+  currentCoords = null;
+
+  cityNameEl.textContent = "Search a city to begin";
+  descEl.textContent = "—";
+  tempEl.textContent = formatTemp(NaN);
+  humidityEl.textContent = "Humidity: --%";
+  windEl.textContent = "Wind: -- " + (units === "metric" ? "m/s" : "mph");
+  feelsEl.textContent = "Feels like: " + formatTemp(NaN);
+
+  iconEl.removeAttribute("src");
+  iconEl.alt = "";
+
+  if (forecastChart) {
+    forecastChart.destroy();
+    forecastChart = null;
+  }
+
+  setThemeByWeather("");
+  clearError();
+}
 
 // =======================
 // EVENT WIRING
 // =======================
-
 function wireEvents() {
-  // ------- Search button -------
+  // Search
   if (searchBtn && cityInput) {
     searchBtn.addEventListener("click", () => {
       const city = cityInput.value.trim();
@@ -420,7 +384,6 @@ function wireEvents() {
       fetchWeatherByCity(city);
     });
 
-    // Enter key press on input
     cityInput.addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
         searchBtn.click();
@@ -428,10 +391,10 @@ function wireEvents() {
     });
   }
 
-  // ------- Use My Location -------
+  // Use my location
   if (useGeoBtn) {
     useGeoBtn.addEventListener("click", () => {
-      clearError?.();
+      clearError();
 
       if (!navigator.geolocation) {
         showError("Geolocation is not supported in this browser.");
@@ -440,11 +403,9 @@ function wireEvents() {
 
       navigator.geolocation.getCurrentPosition(
         (pos) => {
-          currentCoords = {
-            lat: pos.coords.latitude,
-            lon: pos.coords.longitude,
-          };
-          fetchWeatherByCoords(currentCoords.lat, currentCoords.lon);
+          const { latitude, longitude } = pos.coords;
+          currentCoords = { lat: latitude, lon: longitude };
+          fetchWeatherByCoords(latitude, longitude);
         },
         () => {
           showError("Could not get your location. Please allow location access.");
@@ -453,19 +414,16 @@ function wireEvents() {
     });
   }
 
-  // ------- Unit toggle (2 buttons, same id) -------
+  // Unit toggle (2 buttons same id)
   if (unitToggleBtns && unitToggleBtns.length) {
     unitToggleBtns.forEach((btn) => {
       btn.addEventListener("click", () => {
-        // metric <-> imperial
         units = units === "metric" ? "imperial" : "metric";
 
-        // Dono buttons ka text update karo
         unitToggleBtns.forEach((b) => {
           b.textContent = `Unit: ${units === "metric" ? "°C" : "°F"}`;
         });
 
-        // Current data ko new units ke saath re-fetch karo
         if (currentCoords) {
           fetchWeatherByCoords(currentCoords.lat, currentCoords.lon);
         } else if (currentCity) {
@@ -475,34 +433,28 @@ function wireEvents() {
     });
   }
 
-  // ------- Save to favorites -------
+  // Save favorites
   if (saveFavBtn) {
     saveFavBtn.addEventListener("click", handleSaveFavorite);
   }
 
-  // ------- Clear favorites list -------
-  const clearFavsBtn = document.getElementById("clearFavs");
+  // Clear favorites
   if (clearFavsBtn) {
     clearFavsBtn.addEventListener("click", handleClearFavorites);
   }
 
-  // ------- Clear current card (weather result) -------
+  // Clear current weather card
   if (clearBtn) {
-    clearBtn.addEventListener("click", () => {
-      // resetUI tumhare upper code me already defined hai
-      resetUI();
-    });
+    clearBtn.addEventListener("click", resetUI);
   }
 }
 
-
 // =======================
-// INIT – app start hone par kya kare
+// INIT
 // =======================
-
 (function init() {
-  setYear();          
-  loadFavorites();    
-  renderFavorites();  
-  wireEvents();       
+  setYear();
+  loadFavorites();
+  renderFavorites();
+  wireEvents();
 })();
