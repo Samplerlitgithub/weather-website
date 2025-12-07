@@ -17,7 +17,12 @@
 
 *{box-sizing:border-box}
 html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));color:var(--text);-webkit-font-smoothing:antialiased}
-.page{display:flex;flex-direction:column;min-height:100vh}
+.page{
+  display:flex;
+  flex-direction:column;
+  min-height:100vh;
+  padding-top : 24px;
+}
 
 /* Header */
 .header{display:flex;align-items:center;justify-content:space-between;padding:18px 28px}
@@ -167,9 +172,37 @@ body.theme-default {
     gap: 12px;
   }
 
+  .header {
+    margin: 0;
+    padding: 12px 28px 10px;
+    position: relative;
+    z-index: 10;
+     }
+     .page {
+      padding-top: calc(safe-area-inset-top, 0px) + 8px;
+     }
+     .container {
+      padding-top: 6px;
+     }
+
+     @media (max-width: 980px) {
+      .header { padding: 10px 16px; }
+      .page { padding-top: calc(env(safe-area-inset-top, opx) + 6px);
+      }
+
+     }
+      
+     
+
   .controls {
     justify-content: flex-start; /* buttons ko left se line me rakho */
     flex-wrap: wrap;             /* jagah kam ho to next line me chala jaaye */
     margin-top: 0;
+  }
+}
+
+@media (min-width: 981px) {
+  body {
+    overflow: hidden;
   }
 }
