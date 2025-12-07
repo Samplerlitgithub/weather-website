@@ -1,126 +1,144 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="UTF-8" />
   <title>Weather Pulse — Professional</title>
-
-  <!-- Google Font -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-
-  <!-- Chart.js CDN -->
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-  <!-- CSS -->
   <link rel="stylesheet" href="Style.css" />
 </head>
-
 <body>
   <div class="page">
-
     <!-- HEADER -->
     <header class="header">
       <div class="brand">
-        <strong>Weather Pulse</strong>
-        <span class="tag">Reliable • Fast • Minimal</span>
+        <h1 class="brand-title">Weather Pulse</h1>
+        <p class="brand-sub">Reliable • Fast • Minimal</p>
       </div>
 
       <div class="header-actions">
-        <button id="unitToggle" class="btn-ghost" aria-pressed="false">Unit: °C</button>
+        <button id="unitToggle" class="btn-chip" type="button">
+          Unit: °C
+        </button>
       </div>
     </header>
 
     <!-- MAIN CONTENT -->
     <main class="container" id="main">
-
       <!-- SEARCH PANEL -->
       <section class="panel search-panel" aria-labelledby="search-title">
-        <h2 id="search-title" class="visually-hidden">Search Weather</h2>
+        <h2 id="search-title" class="panel-title visually-hidden">
+          Search Weather
+        </h2>
 
-        <form id="searchForm" class="search-form" onsubmit="return false;">
-          <label for="cityInput" class="visually-hidden">City Name</label>
+        <!-- Search + Controls -->
+        <form id="searchForm" class="search-form" onsubmit="return false">
+          <div class="input">
+            <label for="cityInput" class="visually-hidden">City Name</label>
+            <input
+              id="cityInput"
+              class="input-field"
+              placeholder="Search city — e.g. Delhi, Mumbai"
+              autocomplete="off"
+            />
+          </div>
 
-          <input id="cityInput" class="input" placeholder="Search city — e.g. Delhi, Mumbai" autocomplete="off" />
+          <div class="controls">
+            <button id="searchBtn" type="button" class="btn-primary">
+              Search
+            </button>
 
-          <div class="form-actions">
-            <button id="searchBtn" class="btn-primary" type="button">Search</button>
-            <button id="useGeo"  type="button">Use My Location</button>
+            
+            <button id="useGeo" type="button" class="btn-geo">
+              Use My Location
+            </button>
+
+            <button id="unitToggle" type="button" class="btn-chip">
+              Unit: °C
+            </button>
           </div>
         </form>
 
-        <!-- FAVORITES -->
-        <div class="favorites">
-          <strong>Favorites:</strong>
-          <div id="favList" class="fav-list"></div>
-        </div>
+        <!-- FAVORITES LIST -->
+        <section class="favorites" aria-labelledby="fav-title">
+          <h3 id="fav-title" class="favorites-title">Favorites</h3>
+          <div id="favList" class="fav-list">
+          </div>
+        </section>
+            <button id="clearFavs" type="button"
+            class="btn-ghost small-btn">
+             Clear Favorites
+          </button>
       </section>
 
       <!-- RESULT PANEL -->
-      <section class="panel result-panel" id="resultPanel">
-
-        <!-- LOADING -->
-        <div id="loading" class="loading hide">
-          <div class="spinner"></div>
-          <div class="loading-text">Fetching weather...</div>
-        </div>
-
-        <!-- ERROR BOX -->
-        <div id="errorBox" class="error-box hide"></div>
-
-        <!-- WEATHER CARD -->
-        <article id="card" class="weather-card hide">
-
-          <!-- CARD HEADER -->
+      <section class="panel result-panel" aria-live="polite">
+        <article class="weather-card" id="card">
           <header class="card-header">
             <div>
-              <div id="cityName" class="city-name">—</div>
-              <div id="desc" class="muted">—</div>
+              <h2 id="cityName" class="city-name">Search a city to begin</h2>
+              <p id="desc" class="meta muted">—</p>
             </div>
-
-            <div class="temp-block">
-              <div class="w-icon">
-                <img id="icon" src="" alt="" />
-              </div>
-              <div id="temp" class="temp-figure">--°</div>
+            <div class="temp-main">
+              <span id="temp" class="temp">--°C</span>
+              <img
+                id="icon"
+                class="icon"
+                src=""
+                alt=""
+                width="72"
+                height="72"
+              />
             </div>
           </header>
 
-          <!-- CARD BODY -->
           <div class="card-body">
-            <ul class="meta-list">
-              <li>Humidity: <span id="humidity">--%</span></li>
-              <li>Wind: <span id="wind">--</span></li>
-              <li>Feels like: <span id="feels">--°</span></li>
-            </ul>
+            <div class="card-meta">
+              <p id="humidity">Humidity: --%</p>
+              <p id="wind">Wind: -- m/s</p>
+              <p id="feels">Feels like: --°C</p>
+            </div>
 
             <div class="chart-wrap">
               <canvas id="forecastChart"></canvas>
             </div>
           </div>
 
-          <!-- CARD FOOTER -->
           <footer class="card-footer">
             <div class="card-actions">
-              <button id="saveFav" class="btn-outline" type="button">Save to Favorites</button>
-              <button id="clearBtn" class="btn-ghost" type="button">Clear</button>
+              <button id="saveFavBtn" type="button" class="btn-primary">
+                Save to Favorites
+              </button>
+              <button id="clearBtn" type="button" class="btn-ghost">
+                Clear
+              </button>
             </div>
-
-            <div class="meta-note">Data from OpenWeatherMap • UI by Weather Pulse</div>
+            <p class="meta-note">
+              Data from OpenWeatherMap • UI by Weather Pulse
+            </p>
           </footer>
-
         </article>
-      </section>
 
+        <!-- LOADING + ERROR STATES -->
+        <div id="loading" class="loading visually-hidden">
+          Fetching latest weather…
+        </div>
+        <div id="errorBox" class="error-box"></div>
+      </section>
     </main>
 
     <!-- FOOTER -->
     <footer class="footer">
-      <small>© <span id="year"></span> Weather Pulse — Built by Maurya ANKIT</small>
+      <small>
+        <span id="year"></span>
+        Weather Pulse — Built by Maurya ANKIT
+      </small>
     </footer>
-
   </div>
-
-  <!-- JS -->
   <script src="app.js"></script>
 </body>
 </html>

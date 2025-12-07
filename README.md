@@ -23,8 +23,6 @@ This app provides **real-time weather information** for any city worldwide and i
 - Git & GitHub  
 - Vercel (Deployment)
 
----
-
 ## ✨ Features
 - 🔹 Search real-time weather by city name  
 - 🔹 Get current location weather using Geolocation  
@@ -36,9 +34,8 @@ This app provides **real-time weather information** for any city worldwide and i
 ---
 
 ## 📸 Project Preview
-_Add screenshots of your website here for better presentation._
+   I can add some photos about this project as soon as possible.
 
----
 
 ## 🧑‍💻 How to Run Locally
 

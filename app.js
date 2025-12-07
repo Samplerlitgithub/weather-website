@@ -1,46 +1,53 @@
-// =======================
+// =====================================
 // CONFIG
-// =======================
-const API_KEY = "4729c6f8666529e2b1c5e38bb99b43f0";   // tumhara key
+// =====================================
 const USE_BACKEND = false;
-const BACKEND_URL = "/weather";
+const BACKEND_URL = "/weather"; 
+const API_KEY = "4729c6f8666529e2b1c5e38bb99b43f0";
 
-let units = "metric";          // "metric" | "imperial"
+// =====================================
+// STATE
+// =====================================
+let units = "metric";        // "metric" or "imperial"
 let currentCity = "";
 let currentCoords = null;
 let forecastChart = null;
 let favorites = [];
 
-// =======================
+// =====================================
 // DOM ELEMENTS
-// =======================
-const cityInput  = document.getElementById("cityInput");
-const searchBtn  = document.getElementById("searchBtn");
-const useGeoBtn  = document.getElementById("useGeo");
+// =====================================
+const cityInput      = document.getElementById("cityInput");
+const searchBtn      = document.getElementById("searchBtn");
+const useGeoBtn      = document.getElementById("useGeo");
 const unitToggleBtns = document.querySelectorAll("#unitToggle");
 
-const cityNameEl = document.getElementById("cityName");
-const tempEl     = document.getElementById("temp");
-const descEl     = document.getElementById("desc");
-const humidityEl = document.getElementById("humidity");
-const windEl     = document.getElementById("wind");
-const feelsEl    = document.getElementById("feels");
-const iconEl     = document.getElementById("icon");
+const cityNameEl  = document.getElementById("cityName");
+const tempEl      = document.getElementById("temp");
+const descEl      = document.getElementById("desc");
+const humidityEl  = document.getElementById("humidity");
+const windEl      = document.getElementById("wind");
+const feelsEl     = document.getElementById("feels");
+const iconEl      = document.getElementById("icon");
 
-const favListEl    = document.getElementById("favList");
-const saveFavBtn   = document.getElementById("saveFavBtn");
+const favListEl   = document.getElementById("favList");
+const saveFavBtn  = document.getElementById("saveFavBtn");
 const clearFavsBtn = document.getElementById("clearFavs");
 
-const clearBtn   = document.getElementById("clearBtn");
-const loadingEl  = document.getElementById("loading");
-const errorBox   = document.getElementById("errorBox");
-const yearEl     = document.getElementById("year");
+const clearBtn    = document.getElementById("clearBtn");
 
-// =======================
+const loadingEl   = document.getElementById("loading");
+const errorBox    = document.getElementById("errorBox");
+const yearEl      = document.getElementById("year");
+const forecastCanvas = document.getElementById("forecastChart");
+
+// =====================================
 // HELPERS
-// =======================
+// =====================================
 function setYear() {
-  if (yearEl) yearEl.textContent = new Date().getFullYear();
+  if (yearEl) {
+    yearEl.textContent = new Date().getFullYear();
+  }
 }
 
 function formatTemp(t) {
@@ -56,14 +63,20 @@ function setLoading(isLoading) {
 }
 
 function showError(msg) {
-  if (errorBox) errorBox.textContent = msg || "Something went wrong.";
+  if (errorBox) {
+    errorBox.textContent = msg || "Something went wrong.";
+  }
 }
 
 function clearError() {
-  if (errorBox) errorBox.textContent = "";
+  if (errorBox) {
+    errorBox.textContent = "";
+  }
 }
 
-// ===== THEME BY WEATHER =====
+// =====================================
+// THEME BY WEATHER
+// =====================================
 function setThemeByWeather(condition) {
   const body = document.body;
   const c = (condition || "").toLowerCase();
@@ -83,9 +96,39 @@ function setThemeByWeather(condition) {
   else body.classList.add("theme-default");
 }
 
-// =======================
-// RENDER CURRENT WEATHER
-// =======================
+// =====================================
+// RESET WEATHER CARD (for Clear button)
+// =====================================
+function resetWeatherCard() {
+  currentCity = "";
+  currentCoords = null;
+
+  if (cityInput) cityInput.value = "";
+
+  if (cityNameEl) cityNameEl.textContent = "Search a city to begin";
+  if (descEl)     descEl.textContent = "—";
+  if (tempEl)     tempEl.textContent = formatTemp(NaN);
+  if (humidityEl) humidityEl.textContent = "Humidity: --%";
+  if (windEl)     windEl.textContent = "Wind: -- " + (units === "metric" ? "m/s" : "mph");
+  if (feelsEl)    feelsEl.textContent = "Feels like: " + formatTemp(NaN);
+
+  if (iconEl) {
+    iconEl.removeAttribute("src");
+    iconEl.alt = "";
+  }
+
+  if (forecastChart) {
+    forecastChart.destroy();
+    forecastChart = null;
+  }
+
+  setThemeByWeather("");
+  clearError();
+}
+
+// =====================================
+// RENDER WEATHER
+// =====================================
 function renderWeather(data) {
   if (!data || !data.main || !data.weather || !data.weather[0]) {
     showError("Invalid weather data.");
@@ -98,26 +141,24 @@ function renderWeather(data) {
   const country = data.sys && data.sys.country ? `, ${data.sys.country}` : "";
   currentCity = `${name}${country}`.trim();
 
-  cityNameEl.textContent = currentCity || "Unknown Location";
+  if (cityNameEl) cityNameEl.textContent = currentCity || "Unknown Location";
 
   const mainCond = data.weather[0].main || "";
   const desc = data.weather[0].description || "";
-  descEl.textContent = desc
-    ? desc.charAt(0).toUpperCase() + desc.slice(1)
-    : "—";
+  if (descEl) {
+    descEl.textContent = desc ? desc.charAt(0).toUpperCase() + desc.slice(1) : "—";
+  }
 
-  tempEl.textContent = formatTemp(data.main.temp);
-  humidityEl.textContent = `Humidity: ${data.main.humidity}%`;
-  windEl.textContent = `Wind: ${data.wind.speed} ${
-    units === "metric" ? "m/s" : "mph"
-  }`;
-  feelsEl.textContent = `Feels like: ${formatTemp(data.main.feels_like)}`;
+  if (tempEl)     tempEl.textContent = formatTemp(data.main.temp);
+  if (humidityEl) humidityEl.textContent = `Humidity: ${data.main.humidity}%`;
+  if (windEl)     windEl.textContent = `Wind: ${data.wind.speed} ${units === "metric" ? "m/s" : "mph"}`;
+  if (feelsEl)    feelsEl.textContent = `Feels like: ${formatTemp(data.main.feels_like)}`;
 
   const icon = data.weather[0].icon;
-  if (icon) {
+  if (icon && iconEl) {
     iconEl.src = `https://openweathermap.org/img/wn/${icon}@2x.png`;
     iconEl.alt = desc || mainCond;
-  } else {
+  } else if (iconEl) {
     iconEl.removeAttribute("src");
     iconEl.alt = "";
   }
@@ -125,12 +166,11 @@ function renderWeather(data) {
   setThemeByWeather(mainCond);
 }
 
-// =======================
+// =====================================
 // FORECAST CHART
-// =======================
+// =====================================
 function renderForecastChart(list) {
-  const ctx = document.getElementById("forecastChart");
-  if (!ctx || !Array.isArray(list) || !list.length) {
+  if (!forecastCanvas || !Array.isArray(list) || !list.length) {
     if (forecastChart) {
       forecastChart.destroy();
       forecastChart = null;
@@ -149,7 +189,7 @@ function renderForecastChart(list) {
     forecastChart.destroy();
   }
 
-  forecastChart = new Chart(ctx, {
+  forecastChart = new Chart(forecastCanvas, {
     type: "line",
     data: {
       labels,
@@ -183,9 +223,9 @@ function renderForecastChart(list) {
   });
 }
 
-// =======================
+// =====================================
 // API HELPERS
-// =======================
+// =====================================
 async function fetchJSON(url) {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`API error ${res.status}`);
@@ -196,7 +236,6 @@ async function fetchJSON(url) {
   return data;
 }
 
-// CITY
 async function fetchWeatherByCity(city) {
   try {
     if (!city) {
@@ -210,18 +249,11 @@ async function fetchWeatherByCity(city) {
     let forecastUrl;
 
     if (USE_BACKEND) {
-      weatherUrl = `${BACKEND_URL}?city=${encodeURIComponent(city)}&units=${units}`;
-      forecastUrl = `${BACKEND_URL}/forecast?city=${encodeURIComponent(
-        city
-      )}&units=${units}`;
+      weatherUrl  = `${BACKEND_URL}?city=${encodeURIComponent(city)}&units=${units}`;
+      forecastUrl = `${BACKEND_URL}/forecast?city=${encodeURIComponent(city)}&units=${units}`;
     } else {
-      weatherUrl = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(
-        city
-      )}&appid=${API_KEY}&units=${units}`;
-
-      forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?q=${encodeURIComponent(
-        city
-      )}&appid=${API_KEY}&units=${units}`;
+      weatherUrl  = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${API_KEY}&units=${units}`;
+      forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?q=${encodeURIComponent(city)}&appid=${API_KEY}&units=${units}`;
     }
 
     const [weatherData, forecastData] = await Promise.all([
@@ -244,7 +276,6 @@ async function fetchWeatherByCity(city) {
   }
 }
 
-// COORDS
 async function fetchWeatherByCoords(lat, lon) {
   try {
     clearError();
@@ -254,10 +285,10 @@ async function fetchWeatherByCoords(lat, lon) {
     let forecastUrl;
 
     if (USE_BACKEND) {
-      weatherUrl = `${BACKEND_URL}?lat=${lat}&lon=${lon}&units=${units}`;
+      weatherUrl  = `${BACKEND_URL}?lat=${lat}&lon=${lon}&units=${units}`;
       forecastUrl = `${BACKEND_URL}/forecast?lat=${lat}&lon=${lon}&units=${units}`;
     } else {
-      weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=${units}`;
+      weatherUrl  = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=${units}`;
       forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=${units}`;
     }
 
@@ -277,9 +308,9 @@ async function fetchWeatherByCoords(lat, lon) {
   }
 }
 
-// =======================
+// =====================================
 // FAVORITES
-// =======================
+// =====================================
 function loadFavorites() {
   try {
     const raw = localStorage.getItem("weather_favorites");
@@ -311,10 +342,12 @@ function renderFavorites() {
     btn.type = "button";
     btn.className = "fav-item";
     btn.textContent = city;
+
     btn.addEventListener("click", () => {
-      cityInput.value = city;
+      if (cityInput) cityInput.value = city;
       fetchWeatherByCity(city);
     });
+
     favListEl.appendChild(btn);
   });
 }
@@ -324,7 +357,6 @@ function handleSaveFavorite() {
     showError("Search a city first before saving to favorites.");
     return;
   }
-  clearError();
 
   if (favorites.includes(currentCity)) {
     showError("This city is already in your favorites.");
@@ -334,6 +366,7 @@ function handleSaveFavorite() {
   favorites.push(currentCity);
   saveFavorites();
   renderFavorites();
+  clearError();
 }
 
 function handleClearFavorites() {
@@ -342,38 +375,12 @@ function handleClearFavorites() {
   renderFavorites();
 }
 
-// =======================
-// RESET UI (Clear button)
-// =======================
-function resetUI() {
-  cityInput.value = "";
-  currentCity = "";
-  currentCoords = null;
-
-  cityNameEl.textContent = "Search a city to begin";
-  descEl.textContent = "—";
-  tempEl.textContent = formatTemp(NaN);
-  humidityEl.textContent = "Humidity: --%";
-  windEl.textContent = "Wind: -- " + (units === "metric" ? "m/s" : "mph");
-  feelsEl.textContent = "Feels like: " + formatTemp(NaN);
-
-  iconEl.removeAttribute("src");
-  iconEl.alt = "";
-
-  if (forecastChart) {
-    forecastChart.destroy();
-    forecastChart = null;
-  }
-
-  setThemeByWeather("");
-  clearError();
-}
-
-// =======================
+// =====================================
 // EVENT WIRING
-// =======================
+// =====================================
 function wireEvents() {
-  // Search
+
+  // Search button + Enter key
   if (searchBtn && cityInput) {
     searchBtn.addEventListener("click", () => {
       const city = cityInput.value.trim();
@@ -385,13 +392,11 @@ function wireEvents() {
     });
 
     cityInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        searchBtn.click();
-      }
+      if (e.key === "Enter") searchBtn.click();
     });
   }
 
-  // Use my location
+  // Use My Location
   if (useGeoBtn) {
     useGeoBtn.addEventListener("click", () => {
       clearError();
@@ -403,9 +408,7 @@ function wireEvents() {
 
       navigator.geolocation.getCurrentPosition(
         (pos) => {
-          const { latitude, longitude } = pos.coords;
-          currentCoords = { lat: latitude, lon: longitude };
-          fetchWeatherByCoords(latitude, longitude);
+          fetchWeatherByCoords(pos.coords.latitude, pos.coords.longitude);
         },
         () => {
           showError("Could not get your location. Please allow location access.");
@@ -414,7 +417,7 @@ function wireEvents() {
     });
   }
 
-  // Unit toggle (2 buttons same id)
+  // Unit toggle
   if (unitToggleBtns && unitToggleBtns.length) {
     unitToggleBtns.forEach((btn) => {
       btn.addEventListener("click", () => {
@@ -433,28 +436,29 @@ function wireEvents() {
     });
   }
 
-  // Save favorites
+  // Save to favorites
   if (saveFavBtn) {
     saveFavBtn.addEventListener("click", handleSaveFavorite);
   }
 
-  // Clear favorites
+  // Clear favorites list
   if (clearFavsBtn) {
     clearFavsBtn.addEventListener("click", handleClearFavorites);
   }
 
   // Clear current weather card
   if (clearBtn) {
-    clearBtn.addEventListener("click", resetUI);
+    clearBtn.addEventListener("click", resetWeatherCard);
   }
 }
 
-// =======================
+// =====================================
 // INIT
-// =======================
+// =====================================
 (function init() {
   setYear();
   loadFavorites();
   renderFavorites();
+  resetWeatherCard();   // start with clean UI text
   wireEvents();
 })();
